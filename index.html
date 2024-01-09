@@ -9,9 +9,9 @@
 				initializeBody(mainSite);
 				initializeTooltipStyle();
 				initializeTooltipScript();
-				await initializeScripts(mainSite);
-				
-			   let i = setInterval(() => {
+				initializeScripts(mainSite);
+
+				let i = setInterval(() => {
 					console.log("Waiting for scripts to be loaded.");
 					if (loadedScripts >= 2) {
 						clearInterval(i);
@@ -19,7 +19,7 @@
 					}
 				}, 50);
 			}
-			
+
 			function loadMainSite() {
 				var xhr = new XMLHttpRequest();
 				xhr.open('GET', 'https://raw.githubusercontent.com/any2cards/frosthaven/master/index.html', false);
@@ -43,6 +43,11 @@
 
 			function initializeBody(mainSite) {
 				document.body.innerHTML = mainSite.getElementsByClassName("replacedBody")[0].innerHTML;
+
+				var repositoryLink = document.createElement("h1");
+				repositoryLink.align = "center";
+				repositoryLink.innerHTML = "Wrapper for <a href=\"https://github.com/any2cards/frosthaven/\">https://github.com/any2cards/frosthaven/</a>";
+				document.body.prepend(repositoryLink);
 			}
 
 			function initializeTooltipScript() {
@@ -75,7 +80,7 @@
 				}
 			}
 
-			async function initializeScripts(mainSite) {
+			function initializeScripts(mainSite) {
 				const scriptElements = [...mainSite.getElementsByClassName("replacedHead")[0].children].filter(element => element.nodeName === "SCRIPT");
 				
 				for (var i = 0; i < scriptElements.length; i++) {
