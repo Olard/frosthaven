@@ -2,13 +2,22 @@
 <html lang="en-US" dir="ltr">
 	<head>
 		<script>
-			function init(){
+			var loadedScripts = 0;
+			async function init(){
 				var mainSite = loadMainSite();
 				initializeHead(mainSite);
 				initializeBody(mainSite);
 				initializeTooltipStyle();
 				initializeTooltipScript();
-				initializeScripts(mainSite);
+				await initializeScripts(mainSite);
+				
+			   let i = setInterval(() => {
+					console.log("Waiting for scripts to be loaded.");
+					if (loadedScripts >= 2) {
+						clearInterval(i);
+						Initialize();
+					}
+				}, 50);
 			}
 			
 			function loadMainSite() {
@@ -42,7 +51,7 @@
 				xhr.send();
 				if (xhr.status === 200) {
 					var patchedScipt = xhr.responseText.replace("const iconUrl = chrome.extension.getURL('icon-32.png');",
-														"const iconUrl = `${repoBaseUrl}/xwc/firefox/icon-32.png`;");
+														"const iconUrl = `${repoBaseUrl}/xwc/firefox/icon-32.png`;").replace("if (e.ctrlKey) {", "if (!e.ctrlKey) {");
 					var tooltipScript = document.createElement("script");
 					
 					tooltipScript.innerHTML = patchedScipt;
@@ -66,26 +75,15 @@
 				}
 			}
 
-			function initializeScripts(mainSite) {
+			async function initializeScripts(mainSite) {
 				const scriptElements = [...mainSite.getElementsByClassName("replacedHead")[0].children].filter(element => element.nodeName === "SCRIPT");
 				
 				for (var i = 0; i < scriptElements.length; i++) {
 					var newScript = document.createElement(scriptElements[i].nodeName);
+					newScript.onload = () => loadedScripts++;
 					newScript.innerHTML = scriptElements[i].innerHTML;
-					console.log(scriptElements.attributes);
-					if (scriptElements.attributes !== undefined) {
-						[...scriptElements.attributes].forEach( attr => { newScript.setAttribute(attr.nodeName ,attr.nodeValue) });
-					}
-					newScript.onload = function () {
-						console.log("test");
-					}
-					if ((i + 1) === scriptElements.length) {
-						newScript.onload = function () {
-							console.log("test");
-							Initialize();
-						}
-						console.log(newScript);
-					}
+					
+					[...scriptElements[i].attributes].forEach( attr => { newScript.setAttribute(attr.nodeName ,attr.nodeValue) });
 					document.head.appendChild(newScript);
 				}
 			}
