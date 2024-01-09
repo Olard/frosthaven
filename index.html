@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+	<head>
+		<script>
+			function init(){
+				var mainSite = loadMainSite();
+				initializeHead(mainSite);
+				initializeBody(mainSite);
+				initializeTooltipStyle();
+				initializeTooltipScript();
+				initializeScripts(mainSite);
+			}
+			
+			function loadMainSite() {
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', 'https://raw.githubusercontent.com/any2cards/frosthaven/master/index.html', false);
+				xhr.send();
+				if (xhr.status === 200) {
+					var tempDiv = document.createElement('div');
+					tempDiv.innerHTML = xhr.responseText.replace("<body onload=\"Initialize()\">", "<div class=\"replacedBody\">")
+														.replace("</body>", "</div>")
+														.replace("<head>", "<div class=\"replacedHead\">")
+														.replace("</head>", "</div>");
+					return tempDiv;
+				} else {
+					throw new Error("Could not load tooltip style.");
+				}
+			}
+
+			function initializeHead(mainSite) {
+				const headElements = [...mainSite.getElementsByClassName("replacedHead")[0].children];
+				headElements.filter(element => element.nodeName !== "SCRIPT").forEach(element => {document.head.appendChild(element);});
+			}
+
+			function initializeBody(mainSite) {
+				document.body.innerHTML = mainSite.getElementsByClassName("replacedBody")[0].innerHTML;
+			}
+
+			function initializeTooltipScript() {
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', 'https://raw.githubusercontent.com/any2cards/frosthaven/master/xwc/firefox/content.js', false);
+				xhr.send();
+				if (xhr.status === 200) {
+					var patchedScipt = xhr.responseText.replace("const iconUrl = chrome.extension.getURL('icon-32.png');",
+														"const iconUrl = `${repoBaseUrl}/xwc/firefox/icon-32.png`;");
+					var tooltipScript = document.createElement("script");
+					
+					tooltipScript.innerHTML = patchedScipt;
+					document.head.appendChild(tooltipScript);
+				} else {
+					throw new Error("Could not load tooltip script.");
+				}
+			}
+
+			function initializeTooltipStyle() {
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', 'https://raw.githubusercontent.com/any2cards/frosthaven/master/xwc/firefox/content.css', false);
+				xhr.send();
+				if (xhr.status === 200) {
+					var tooltipStyle = document.createElement("style");
+					
+					tooltipStyle.innerHTML = xhr.responseText;
+					document.head.appendChild(tooltipStyle);
+				} else {
+					throw new Error("Could not load tooltip style.");
+				}
+			}
+
+			function initializeScripts(mainSite) {
+				const scriptElements = [...mainSite.getElementsByClassName("replacedHead")[0].children].filter(element => element.nodeName === "SCRIPT");
+				
+				for (var i = 0; i < scriptElements.length; i++) {
+					var newScript = document.createElement(scriptElements[i].nodeName);
+					newScript.innerHTML = scriptElements[i].innerHTML;
+					console.log(scriptElements.attributes);
+					if (scriptElements.attributes !== undefined) {
+						[...scriptElements.attributes].forEach( attr => { newScript.setAttribute(attr.nodeName ,attr.nodeValue) });
+					}
+					newScript.onload = function () {
+						console.log("test");
+					}
+					if ((i + 1) === scriptElements.length) {
+						newScript.onload = function () {
+							console.log("test");
+							Initialize();
+						}
+						console.log(newScript);
+					}
+					document.head.appendChild(newScript);
+				}
+			}
+		</script>
+	</head>
+
+	<body onload="init()">
+	</body>
+</html>
