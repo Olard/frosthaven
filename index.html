@@ -44,6 +44,12 @@
 			function initializeBody(mainSite) {
 				document.body.innerHTML = mainSite.getElementsByClassName("replacedBody")[0].innerHTML;
 
+				var warningLabel = document.createElement("h1");
+				warningLabel.align = "center";
+				warningLabel.style = "color: red;";
+				warningLabel.innerHTML = "Warning: Hovering over text will display the Image (and contain spoilers)!";
+				document.body.prepend(warningLabel);
+
 				var repositoryLink = document.createElement("h1");
 				repositoryLink.align = "center";
 				repositoryLink.innerHTML = "Wrapper for <a href=\"https://github.com/any2cards/frosthaven/\">https://github.com/any2cards/frosthaven/</a>";
